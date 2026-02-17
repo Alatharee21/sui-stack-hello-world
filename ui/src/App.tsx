@@ -1,4 +1,4 @@
-import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
+import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit-react";
 import { isValidSuiObjectId } from "@mysten/sui/utils";
 import { Box, Button, Container, Flex, Heading } from "@radix-ui/themes";
 import { useState } from "react";

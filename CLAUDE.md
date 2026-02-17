@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a Sui blockchain hello world application with two main components:
 
 - **Move smart contract** (`/move/hello-world/`): Contains the Sui Move package with a `Greeting` struct and functions to create and update greeting objects
-- **React UI** (`/ui/`): Frontend dApp built with React, TypeScript, Vite, and Sui dApp Kit for wallet integration
+- **React UI** (`/ui/`): Frontend dApp built with React, TypeScript, Vite, and `@mysten/dapp-kit-react` for wallet integration
 
 ## Common Commands
 
@@ -56,9 +56,9 @@ tsc
 
 ### Frontend Integration
 - **Package ID**: Must be updated in `ui/src/constants.ts` after Move package publication
-- **Network Config**: Uses `@mysten/dapp-kit`'s `createNetworkConfig` for testnet configuration
+- **Network Config**: Uses `createDAppKit` from `@mysten/dapp-kit-react` with `SuiGrpcClient` for testnet configuration
 - **Transaction Pattern**: Uses `Transaction` class with `moveCall` for smart contract interaction
-- **State Management**: React hooks with `@mysten/dapp-kit` for wallet connection and Sui client queries
+- **State Management**: React hooks with `@mysten/dapp-kit-react` and `@tanstack/react-query` for wallet connection and Sui client queries
 - **Object Management**: App tracks greeting object IDs via URL hash and local state
 
 ### Publication Workflow

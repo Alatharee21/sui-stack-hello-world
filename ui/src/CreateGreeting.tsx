@@ -1,6 +1,7 @@
 import { Transaction } from "@mysten/sui/transactions";
 import { Button, Container } from "@radix-ui/themes";
-import { useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit";
+import { useDAppKit } from "@mysten/dapp-kit-react";
+import { useMutation } from "@tanstack/react-query";
 import { useNetworkVariable } from "./networkConfig";
 import { useState } from "react";
 import { ClipLoader } from "react-spinners";
@@ -11,13 +12,16 @@ export function CreateGreeting({
   onCreated: (id: string) => void;
 }) {
   const helloWorldPackageId = useNetworkVariable("helloWorldPackageId");
-  const suiClient = useSuiClient();
-  const { mutate: signAndExecute } = useSignAndExecuteTransaction();	
+  const dAppKit = useDAppKit();
+
+  const { mutate: signAndExecute } = useMutation({
+    mutationFn: (tx: Transaction) =>
+      dAppKit.signAndExecuteTransaction({ transaction: tx }),
+  });
 
   const [waitingForTxn, setWaitingForTxn] = useState(false);
 
   const create = () => {
-
     setWaitingForTxn(true);
 
     const tx = new Transaction();
@@ -27,23 +31,22 @@ export function CreateGreeting({
       target: `${helloWorldPackageId}::greeting::new`,
     });
 
-    signAndExecute(
-      {
-        transaction: tx,
+    signAndExecute(tx, {
+      onSuccess: (result) => {
+        const txData = result.Transaction ?? result.FailedTransaction;
+        if (txData?.effects) {
+          const created = txData.effects.changedObjects.filter(
+            (obj) => obj.idOperation === "Created",
+          );
+          const objectId = created[0]?.objectId;
+          if (objectId) {
+            onCreated(objectId);
+          }
+        }
+        setWaitingForTxn(false);
       },
-      {
-        onSuccess: (tx) => {
-          suiClient.waitForTransaction({ digest: tx.digest, options: { showEffects: true } }).then(async (result) => {
-            const objectId = result.effects?.created?.[0]?.reference?.objectId;
-            if (objectId) {
-              onCreated(objectId);
-              setWaitingForTxn(false);
-            }
-          });
-        },
-      },
-    );
-  }
+    });
+  };
 
   return (
     <Container>
@@ -54,11 +57,7 @@ export function CreateGreeting({
         }}
         disabled={waitingForTxn}
       >
-        {waitingForTxn? (
-          <ClipLoader size={20} />
-        ) : (
-          "Create Greeting"
-        )}
+        {waitingForTxn ? <ClipLoader size={20} /> : "Create Greeting"}
       </Button>
     </Container>
   );
